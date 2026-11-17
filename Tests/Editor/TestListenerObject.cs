@@ -10,5 +10,8 @@ namespace RonJames.Foundation.Tests
         public readonly List<string> Calls = new List<string>();
 
         public void OnEventRaised() => Calls.Add(name);
+
+        /// <summary>A method to subscribe as a plain delegate (method group).</summary>
+        public void Record() => Calls.Add(name);
     }
 }

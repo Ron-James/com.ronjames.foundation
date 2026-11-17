@@ -13,7 +13,7 @@ namespace RonJames.Foundation.Events
     /// <item>Subscribing or unsubscribing during a Raise takes effect on the next Raise.</item>
     /// <item>A Raise started inside a Raise runs immediately (nested), up to <see cref="MaxRaiseDepth"/> deep.</item>
     /// <item>A Listener that throws is logged and the others still run.</item>
-    /// <item>Destroyed Unity listeners are skipped.</item>
+    /// <item>Destroyed Unity listeners, and delegates targeting destroyed Unity objects, are skipped.</item>
     /// </list>
     /// </summary>
     internal sealed class ListenerList
@@ -94,7 +94,21 @@ namespace RonJames.Foundation.Events
             depth--;
         }
 
-        public static bool ShouldSkip(object listener) => UnityNull.IsNull(listener);
+        /// <summary>
+        /// True for destroyed Unity listeners, and for delegates whose target is a destroyed Unity
+        /// object (a method-group subscription like <c>Subscribe(OnRaised)</c> from a MonoBehaviour that
+        /// was destroyed without unsubscribing). Lambdas capture a closure, not the object, so they
+        /// can't be detected: always unsubscribe them.
+        /// </summary>
+        public static bool ShouldSkip(object listener)
+        {
+            if (UnityNull.IsNull(listener))
+            {
+                return true;
+            }
+
+            return listener is Delegate callback && callback.Target is Object target && target == null;
+        }
 
         public static void Report(Exception exception, object listener, Object context)
         {

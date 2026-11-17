@@ -15,6 +15,7 @@ Reusable Unity infrastructure for designer-authored behaviour:
 | [`Documentation~/events.md`](Documentation~/events.md) | Events, Variable Events, Listeners, Responses, your own value types |
 | [`Documentation~/commands.md`](Documentation~/commands.md) | Commands, Runs, Skip / Stop, failure, Composites, built-ins, writing your own |
 | [`Documentation~/migration.md`](Documentation~/migration.md) | **coming from the Bizar projects**: old → new mapping and changed behaviour |
+| [`Documentation~/migration-gushesheGear.md`](Documentation~/migration-gushesheGear.md) | **migrating GushesheGear** (Action SOs, action listeners, Action References): concept map and phased plan |
 | [`GLOSSARY.md`](GLOSSARY.md) | the exact meaning of every term |
 | [`Documentation~/adr/`](Documentation~/adr), [`Documentation~/design-notes.md`](Documentation~/design-notes.md) | why things are the way they are |
 | [`CHANGELOG.md`](CHANGELOG.md) | what changed in each version |

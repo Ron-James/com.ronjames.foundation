@@ -10,6 +10,8 @@ RonJames Foundation is three small systems that let designers build behaviour in
 
 If you've used the command / event / variable systems from the earlier Bizar projects, read **[migration.md](migration.md)** first. It maps every old class and option to its replacement and lists behaviour that changed.
 
+For **GushesheGear** (Action SOs, action listeners, Action References), see **[migration-gushesheGear.md](migration-gushesheGear.md)**: a concept map, the behaviour differences that matter there, and a phased plan for migrating that project onto the package.
+
 ## How the pieces fit
 
 ```

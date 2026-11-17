@@ -48,7 +48,7 @@ Each Variable Event has a serialized **Initial Value** (what you author) and a n
 2. Subscribing or unsubscribing **during a Raise** takes effect on the **next** Raise.
 3. If a Listener **Sets the event it is listening to**, that nested Raise is delivered **immediately**. Listeners later in the outer Raise then read the newest value, so everyone ends up with the latest value. Nesting deeper than 32 levels is refused with an error: it's almost certainly an infinite loop.
 4. A Listener that **throws** is logged (click the log to select it) and the remaining Listeners still run.
-5. **Destroyed** Unity listeners are skipped.
+5. **Destroyed** Unity listeners are skipped, and so are delegates whose target is a destroyed Unity object (e.g. `Subscribe(OnRaised)` from a MonoBehaviour destroyed without unsubscribing). Lambdas capture a closure rather than the object, so they can't be detected: always unsubscribe them.
 
 ### From code
 

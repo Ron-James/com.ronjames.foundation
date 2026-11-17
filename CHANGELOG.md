@@ -8,7 +8,11 @@ All notable changes to this package are documented here. The format follows [Kee
 - **Control** Command: makes a Stop Sequence, Skip Parent or Stop Parent request from the inspector. Designers can now end a Sequence or Composite early without code, replacing the old per-command "cancel on complete" option.
 - **Wait For Event** can wait for several Raises (*Required Raises*, default 1), with the count shown as progress.
 - Full documentation in `Documentation~/`: an overview, a guide per module (Values, Events, Commands), and a migration guide from the earlier Bizar projects.
+- A GushesheGear migration guide: Action SOs, action listeners and Action References mapped to the package, plus a phased migration plan.
 - This changelog, and `documentationUrl` / `changelogUrl` in `package.json`.
+
+### Fixed
+- Delegates whose target is a destroyed Unity object (a method subscribed without a matching unsubscribe) are now skipped when an Event is Raised, instead of calling into the destroyed object.
 
 ### Changed
 - The ADRs and design notes moved from `docs/` to `Documentation~/`, so they are no longer imported into consuming projects as assets.

@@ -174,6 +174,21 @@ namespace RonJames.Foundation.Tests
         }
 
         [Test]
+        public void DelegatesTargetingDestroyedObjects_AreSkipped()
+        {
+            var alive = Create<TestListenerObject>("alive");
+            var doomed = Create<TestListenerObject>("doomed");
+            signal.Subscribe((Action)doomed.Record);
+            signal.Subscribe((Action)alive.Record);
+            Object.DestroyImmediate(doomed);
+
+            signal.Raise();
+
+            Assert.AreEqual(new[] { "alive" }, alive.Calls);
+            Assert.IsEmpty(doomed.Calls, "A forgotten unsubscribe must not call into a destroyed object.");
+        }
+
+        [Test]
         public void VariableEvents_CanBeListenedToAsPlainEvents()
         {
             var listener = Create<TestListenerObject>("plain");
