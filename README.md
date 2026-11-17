@@ -16,6 +16,7 @@ Reusable Unity infrastructure for designer-authored behaviour:
 | [`Documentation~/commands.md`](Documentation~/commands.md) | Commands, Runs, Skip / Stop, failure, Composites, built-ins, writing your own |
 | [`Documentation~/migration.md`](Documentation~/migration.md) | **coming from the Bizar projects**: old → new mapping and changed behaviour |
 | [`Documentation~/migration-gushesheGear.md`](Documentation~/migration-gushesheGear.md) | **migrating GushesheGear** (Action SOs, action listeners, Action References): concept map and phased plan |
+| [`Migration~/GushesheGear/README.md`](Migration~/GushesheGear/README.md) | **the GushesheGear migration kit**: bridge patch, types, ported Responses and the migration tools, step by step |
 | [`GLOSSARY.md`](GLOSSARY.md) | the exact meaning of every term |
 | [`Documentation~/adr/`](Documentation~/adr), [`Documentation~/design-notes.md`](Documentation~/design-notes.md) | why things are the way they are |
 | [`CHANGELOG.md`](CHANGELOG.md) | what changed in each version |

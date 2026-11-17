@@ -2,6 +2,17 @@
 
 All notable changes to this package are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the package uses [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+- **GushesheGear migration kit** (`Migration~/GushesheGear/`, not imported by Unity):
+  - a `git apply` bridge patch (`BaseActionSO` → `IEvent`, `ActionSO<T>` → `IVariableEvent<T>`, `ValueAsset<T>` → writable Value Source);
+  - Variable Event / Listener / Set types for every GushesheGear value type;
+  - Responses ported from the old listener subclasses;
+  - editor tools with dry runs and reports: the Listener Migrator (plus a verify pass), the `[MigrateFrom]` Field Migrator and the Action Asset Converter.
+
+  Tested end to end on a copy of GushesheGear.
+
 ## [0.3.0] - 2026-11-17
 
 ### Added

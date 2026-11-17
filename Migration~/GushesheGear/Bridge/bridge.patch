@@ -1,0 +1,154 @@
+diff --git a/Assets/_Assets_James/Scripts/ActionSO/Template/ActionSO.cs b/Assets/_Assets_James/Scripts/ActionSO/Template/ActionSO.cs
+index a54af52..300ec81 100644
+--- a/Assets/_Assets_James/Scripts/ActionSO/Template/ActionSO.cs
++++ b/Assets/_Assets_James/Scripts/ActionSO/Template/ActionSO.cs
+@@ -6,13 +6,15 @@ using Sirenix.OdinInspector;
+ using UnityEngine;
+ using UnityEngine.Events;
+ using UnityEngine.SceneManagement;
++using RonJames.Foundation.Events;
++using RonJames.Foundation.Values;
+ 
+ /// <summary>
+ /// Base class for all Action ScriptableObject events (no payload or used as base for generic).
+ /// Implements diagnostics for basic runtime tracking.
+ /// </summary>
+ [CreateAssetMenu(fileName = "EventSO", menuName = "Scriptable Objects/EventSO")]
+-public abstract class BaseActionSO : SaveableSO, ISceneCycleListener
++public abstract class BaseActionSO : SaveableSO, ISceneCycleListener, IEvent
+ {
+     
+     [SerializeField, Tooltip("Automatically prune null / orphaned subscribers before each Raise call.")]
+@@ -80,6 +82,7 @@ public abstract class BaseActionSO : SaveableSO, ISceneCycleListener
+     {
+         _raiseCount = 0;
+         _subscribers.Clear();
++        _bridged.Clear();
+         HasRaised = false;
+         
+     }
+@@ -111,13 +114,50 @@ public abstract class BaseActionSO : SaveableSO, ISceneCycleListener
+     public override void OnLoad() { }
+     public override void ResetSaveState() { }
+     public override void OnPreLoad(Dictionary<string, object> state) { }
++
++    // ------------------------------------------------------------------
++    // RonJames Foundation bridge: lets package Listeners, Variable References and Commands use
++    // this asset as an IEvent. Package-side subscriptions are mapped onto the existing subscriber
++    // list (with the subscribing object as Origin, so RemoveNullSubscribers still cleans them up).
++    // Remove when the asset is converted to a package EventAsset / VariableEvent.
++    // ------------------------------------------------------------------
++    protected readonly Dictionary<object, string> _bridged = new();
++
++    void RonJames.Foundation.Events.IEvent.Raise() => RaiseCurrentForBridge();
++
++    /// <summary>What IEvent.Raise means for this asset: Raise() here; the current value for ActionSO&lt;T&gt;.</summary>
++    protected virtual void RaiseCurrentForBridge() => Raise();
++
++    void RonJames.Foundation.Events.IEvent.Subscribe(IEventListener listener) =>
++        BridgeSubscribe(listener, listener as UnityEngine.Object, () => listener.OnEventRaised());
++
++    void RonJames.Foundation.Events.IEvent.Unsubscribe(IEventListener listener) => BridgeUnsubscribe(listener);
++
++    void RonJames.Foundation.Events.IEvent.Subscribe(Action listener) =>
++        BridgeSubscribe(listener, listener?.Target as UnityEngine.Object, () => listener());
++
++    void RonJames.Foundation.Events.IEvent.Unsubscribe(Action listener) => BridgeUnsubscribe(listener);
++
++    protected void BridgeSubscribe(object key, UnityEngine.Object origin, UnityAction response)
++    {
++        if (key == null || _bridged.ContainsKey(key)) return;
++        IGuidIdentifiable subscription = Subscribe(origin != null ? origin : this, response);
++        if (subscription != null) _bridged[key] = subscription.Guid;
++    }
++
++    protected void BridgeUnsubscribe(object key)
++    {
++        if (key == null || !_bridged.TryGetValue(key, out string guid)) return;
++        RemoveByGuid(guid);
++        _bridged.Remove(key);
++    }
+ }
+ 
+ /// <summary>
+ /// Generic Action ScriptableObject that stores and broadcasts a value when raised.
+ /// Provides both value-payload subscribers and payload-less subscribers.
+ /// </summary>
+-public abstract class ActionSO<T> : BaseActionSO, IValueAsset<T>
++public abstract class ActionSO<T> : BaseActionSO, IValueAsset<T>, IVariableEvent<T>
+ {
+     [Title("Raise Properties")]
+     [SerializeField, Tooltip("The default value this action stores before being raised for the first time.")] protected T _defaultCallValue;
+@@ -359,4 +399,43 @@ public abstract class ActionSO<T> : BaseActionSO, IValueAsset<T>
+             Raise(temp);
+         }
+     }
++
++    // ------------------------------------------------------------------
++    // RonJames Foundation bridge: this asset as an IVariableEvent<T> / Value Source.
++    // Note: Raise(value) still notifies before storing the value (old behaviour), so inside a
++    // bridged listener read the value you're given, not Value.
++    // ------------------------------------------------------------------
++    protected override void RaiseCurrentForBridge() => Raise(StoredValue);
++
++    T IValueSource<T>.Value => StoredValue;
++    object IValueSource.Value => StoredValue;
++    Type IValueSource.ValueType => typeof(T);
++    void IWritableValueSource<T>.SetValue(T value) => Raise(value);
++    void IWritableValueSource.SetValue(object value) => Raise(ValueConversion.To<T>(value, this));
++    void IVariableEvent<T>.Set(T value) => Raise(value);
++    void IVariableEvent<T>.SetSilently(T value) => SetStoredValueDirectly(value);
++    void IVariableEvent<T>.RaiseCurrent() => Raise(UnityNull.IsNull(StoredValue) ? _defaultCallValue : StoredValue);
++
++    void IVariableEvent<T>.Subscribe(IVariableEventListener<T> listener) =>
++        BridgeSubscribeTyped(listener, listener as UnityEngine.Object, value => listener.OnEventRaised(value));
++
++    void IVariableEvent<T>.Unsubscribe(IVariableEventListener<T> listener) => BridgeUnsubscribe(listener);
++
++    void IVariableEvent<T>.Subscribe(Action<T> listener) =>
++        BridgeSubscribeTyped(listener, listener?.Target as UnityEngine.Object, value => listener(value));
++
++    void IVariableEvent<T>.Unsubscribe(Action<T> listener) => BridgeUnsubscribe(listener);
++
++    event Action IObservableValueSource.ValueChanged
++    {
++        add => BridgeSubscribe(value, value?.Target as UnityEngine.Object, () => value());
++        remove => BridgeUnsubscribe(value);
++    }
++
++    protected void BridgeSubscribeTyped(object key, UnityEngine.Object origin, UnityAction<T> response)
++    {
++        if (key == null || _bridged.ContainsKey(key)) return;
++        IGuidIdentifiable subscription = Subscribe(origin != null ? origin : this, response);
++        if (subscription != null) _bridged[key] = subscription.Guid;
++    }
+ }
+diff --git a/Assets/_Assets_James/Scripts/ValueAssets/ValueAsset.cs b/Assets/_Assets_James/Scripts/ValueAssets/ValueAsset.cs
+index 69a7760..fccfb91 100644
+--- a/Assets/_Assets_James/Scripts/ValueAssets/ValueAsset.cs
++++ b/Assets/_Assets_James/Scripts/ValueAssets/ValueAsset.cs
+@@ -1,8 +1,10 @@
+ using Sirenix.OdinInspector;
+ using UnityEngine;
++using System;
++using RonJames.Foundation.Values;
+ 
+ [CreateAssetMenu(fileName = "ValueAsset", menuName = "Scriptable Objects/ValueAsset")]
+-public abstract class ValueAsset<T> : SerializableScriptableObject, IValueAsset<T>
++public abstract class ValueAsset<T> : SerializableScriptableObject, IValueAsset<T>, IWritableValueSource<T>
+ {
+     [SerializeField] protected T _storedValue;
+ 
+@@ -11,4 +13,11 @@ public abstract class ValueAsset<T> : SerializableScriptableObject, IValueAsset<
+         get => _storedValue;
+         set => _storedValue = value;
+     }
++
++    // RonJames Foundation bridge: this asset as a writable Value Source.
++    T IValueSource<T>.Value => StoredValue;
++    object IValueSource.Value => StoredValue;
++    Type IValueSource.ValueType => typeof(T);
++    void IWritableValueSource<T>.SetValue(T value) => StoredValue = value;
++    void IWritableValueSource.SetValue(object value) => StoredValue = ValueConversion.To<T>(value, this);
+ }
+\ No newline at end of file

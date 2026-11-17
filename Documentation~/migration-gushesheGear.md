@@ -145,6 +145,14 @@ The same pattern replaces any other `TriggerUnityEvents` override (e.g. `IntList
 
 The key is a **bridge**: make the existing Action SOs implement the package's interfaces. Then new Listeners, Variable References and Commands work with the **existing assets**, and you can migrate one prefab or scene at a time while everything keeps working. The assets themselves are converted last.
 
+**Use the migration kit**: [`Migration~/GushesheGear/`](../Migration~/GushesheGear/README.md) in this repo. It contains:
+- the bridge as a `git apply` patch;
+- the Variable Event / Listener / Set types for every GushesheGear value type;
+- Responses ported from the old listener subclasses;
+- editor tools (dry run first) for phases 2–4.
+
+The phases below explain what each step does. The kit's README is the step-by-step.
+
 ### Phase 0: install
 
 - Add the package: `"com.ronjames.foundation": "https://github.com/Ron-James/com.ronjames.foundation.git#v0.3.0"` (Odin and Unity 6 are already there; check Odin is 3.3+).
@@ -152,7 +160,7 @@ The key is a **bridge**: make the existing Action SOs implement the package's in
 
 ### Phase 1: the bridge (no behaviour change)
 
-Add the package interfaces to the old base classes. This is a sketch against the current `ActionSO.cs` and `VoidEventSO.cs`; it hasn't been compiled in GushesheGear, so treat it as a starting point.
+Add the package interfaces to the old base classes: **apply `Migration~/GushesheGear/Bridge/bridge.patch`**. It puts the bridge on `BaseActionSO`, so `VoidActionSo` and every `ActionSO<T>` get it, and makes `ValueAsset<T>` a writable Value Source. The sketch below shows the idea; the patch is the tested version.
 
 ```csharp
 using System;
@@ -227,19 +235,29 @@ For each old listener component:
 5. Turn on **Receive Current Value On Enable** where `updateOnEnable` was on, and check behaviour 6 above.
 6. Remove the old component. Use **Find References** on the asset to confirm nothing still points at the old listener.
 
-With ~230 components this is worth automating. The approach is an editor script that walks prefabs and scenes and, for each old listener:
+**The kit's Listener Migrator does all of this automatically** for the safe cases. It:
 - adds the new component;
-- copies the action list;
-- builds the Filter from `_useListenValues` / `_listenValue` / `filterValues` / `_invertListenValue`;
-- moves the existing `UnityEvent` *instance* into a new `UnityEventResponse`, so its persistent calls carry over;
+- copies the actions and enabled state;
+- builds the Filter;
+- moves the existing UnityEvent *objects* into Responses, so every wired call carries over;
+- ports subclass behaviour into Responses (`BoolSplitResponse`, `IntToStringResponse`, `StuntStateResponse`, `FloatFormatResponse` / `FloatCompareResponse`, `TranslatedStringResponse`);
 - removes the old component.
 
-I can write and test that script against a copy of the project when you're ready.
+It reports, and leaves alone, any listener that:
+- is a UI card (Product, Mission, Quest, ItemQuantity, ExperienceData, Level, ActiveModifier, Item, PaintProduct);
+- is referenced by anything (a UnityEvent target, a field, Odin data);
+- is overridden in a prefab variant or scene instance;
+- uses a feature with no equivalent.
+
+Port those by hand, using the recipe above. For the UI cards, the cleanest split is a small project component that holds the card logic and is fed by a Variable Event Listener + Response.
 
 ### Phase 3: Action References and subscriptions in code (22 + 13 files)
 
 1. **The host must be Odin-serialized.** `ActionReference<T>` is a Unity-serialized `[Serializable]` class, but `VariableReference<T>` needs Odin. Change each `MonoBehaviour` / `ScriptableObject` that holds one to `SerializedMonoBehaviour` / `SerializedScriptableObject`. Existing Unity-serialized fields keep their data.
-2. **Changing the field type loses its data.** For each field, add the new `VariableReference<T>` next to the old one and copy across with a one-off editor step: `useValue` → Value mode with `_value`, otherwise Source mode with `assetReference` (a bridged ActionSO is a Value Source). Then delete the old field.
+2. **Changing the field type loses its data.** For each field, add the new `VariableReference<T>` (or `IEvent` / `IVariableEvent<T>`) next to the old one, marked `[OdinSerialize, MigrateFrom(nameof(oldField))]`, and run the kit's **Field Migrator**.
+   - **What it copies:** `useValue` → Value mode with `_value`; otherwise Source mode with `assetReference` (a bridged ActionSO is a Value Source); subscriptions → their Action asset.
+   - **Where:** every prefab, scene and ScriptableObject asset. Prefab instances are written only where they overrode the old field.
+   - **Then:** switch the code over and delete the old field.
 3. Replace `reference.Subscribe(this, OnX)` / `UnsubscribeALl(this)` with `TryAddChangedListener(OnX)` / `RemoveChangedListener(OnX)` in `OnEnable` / `OnDisable`. For the value, read `reference.Value`.
 4. Replace `ActionSubscription` / `MessageSubscription<T>` fields with `[OdinSerialize] IEvent` / `IVariableEvent<T>` fields and `Subscribe` / `Unsubscribe` with a stored delegate. Today they're used in:
    - `SaveDataManagerSO`, `LevelManager`, `AnimationStateManager`, `RoadSpawner`;
@@ -250,10 +268,12 @@ I can write and test that script against a copy of the project when you're ready
 
 ### Phase 4: convert the assets
 
-Once nothing references the old *types* directly (only the package interfaces), convert each asset from `XActionSO` to `XVariableEvent` / `EventAsset`. An editor script for each asset:
+Once nothing references the old *types* directly (only the package interfaces), convert each asset from `XActionSO` to `XVariableEvent` / `EventAsset` with the kit's **Asset Converter**. For each asset it:
 - reads `_defaultCallValue`;
 - swaps the asset's script to the new class (the asset's GUID, and so every reference to it, is kept);
 - writes the value into **Initial Value**.
+
+It refuses, and reports, while any user of the asset still has an old-system field, and for ActionSO classes that declare their own members, until those are ported.
 
 Code that used game-specific methods (`IntActionSO.AddAmount`, …) moves to extension methods or small Commands. Assets can move out of `Resources/`.
 
