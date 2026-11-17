@@ -106,6 +106,10 @@ _Avoid_: Fire, invoke, publish, trigger
 Changing a Variable Event's value and then Raising it.
 _Avoid_: Write, assign
 
+**Raise Current**:
+Raising a Variable Event's current value, or its Initial Value instead when the current value is null or missing.
+_Avoid_: Refresh, raise default
+
 **Set Silently**:
 Changing a Variable Event's value without Raising it.
 _Avoid_: Raise dry, set without notify

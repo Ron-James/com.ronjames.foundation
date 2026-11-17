@@ -60,6 +60,53 @@ namespace RonJames.Foundation.Tests
         }
 
         [Test]
+        public void RaiseCurrent_RaisesTheCurrentValue_OrTheInitialValueWhenNull()
+        {
+            var target = Create<GameObjectVariableEvent>("Target");
+            var fallback = new GameObject("fallback");
+            var current = new GameObject("current");
+            try
+            {
+                target.InitialValue = fallback;
+                target.ResetForPlayMode();
+                var received = new List<GameObject>();
+                target.Subscribe((Action<GameObject>)received.Add);
+
+                target.Set(current);
+                target.RaiseCurrent();
+                Assert.AreSame(current, received[1], "A non-null current value is raised as is.");
+
+                target.Set(null);
+                target.RaiseCurrent();
+                Assert.AreSame(fallback, received[3], "A null current value falls back to the Initial Value.");
+                Assert.AreSame(fallback, target.Value, "The fallback is stored, so listeners read what they're given.");
+
+                target.Set(current);
+                Object.DestroyImmediate(current);
+                target.RaiseCurrent();
+                Assert.AreSame(fallback, received[5], "A destroyed object counts as null.");
+            }
+            finally
+            {
+                Object.DestroyImmediate(fallback);
+            }
+        }
+
+        [Test]
+        public void RaiseCurrent_OnValueTypes_IsTheSameAsRaise()
+        {
+            var received = new List<int>();
+            number.InitialValue = 10;
+            number.ResetForPlayMode();
+            number.Subscribe((Action<int>)received.Add);
+
+            number.Set(0);
+            number.RaiseCurrent();
+
+            Assert.AreEqual(new[] { 0, 0 }, received, "0 is a value, not null, so there is no fallback.");
+        }
+
+        [Test]
         public void Set_SameValueStillRaises_UnlessOnlyRaiseOnChange()
         {
             int raises = 0;

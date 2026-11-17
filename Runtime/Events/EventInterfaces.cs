@@ -51,6 +51,12 @@ namespace RonJames.Foundation.Events
         /// <summary>Changes the value without Raising.</summary>
         void SetSilently(T value);
 
+        /// <summary>
+        /// Raises the current value, or, when the current value is null (or a destroyed Unity object),
+        /// puts the Initial Value back first and Raises that. For value types this is the same as Raise().
+        /// </summary>
+        void RaiseCurrent();
+
         /// <summary>Adds a typed Listener. Adding the same Listener twice has no effect.</summary>
         void Subscribe(IVariableEventListener<T> listener);
 

@@ -23,9 +23,12 @@ A Variable Event deliberately combines "variable" and "event" (ADR 0002). In pra
 ```csharp
 hasKey.Set(true);          // change the value, then Raise
 hasKey.SetSilently(true);  // change the value, don't Raise
-hasKey.Raise();            // Raise again with the current value
+hasKey.Raise();            // Raise again with the current value (even if it's null)
+target.RaiseCurrent();     // Raise the current value, or the Initial Value if the current one is null
 bool value = hasKey.Value; // read the Runtime Value
 ```
+
+- **Raise Current** is for reference-type values (a `GameObject`, a `Product`…) that may have been cleared or destroyed. If the current value is null, including a destroyed Unity object, it puts (a copy of) the Initial Value back and Raises that. The fallback is stored first, so Listeners reading `Value` see what they were given. For value types (`int`, `bool`, `Vector3`…) the value is never null, so it's the same as Raise. It takes no parameters, so you can wire it from a UnityEvent, and it has a button in the play-mode inspector.
 
 - **Set always Raises**, even when the value is unchanged: it's an event, and "the same item was picked twice" must still notify. For state-like values, turn on **Only Raise On Change** on the asset.
 - Writing through a `VariableReference<T>` in Source mode, or through `IWritableValueSource`, is a **Set**.

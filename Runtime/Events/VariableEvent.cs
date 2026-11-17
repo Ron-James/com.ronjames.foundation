@@ -118,6 +118,26 @@ namespace RonJames.Foundation.Events
             StashForEditor();
         }
 
+        /// <summary>
+        /// Raises the current value, falling back to the Initial Value when the current value is null
+        /// (or a destroyed Unity object). The fallback is stored before Listeners run, so they read the
+        /// same value they're given. For value types the current value is never null, so this is the
+        /// same as <see cref="Raise"/>. Safe to wire to UnityEvents.
+        /// </summary>
+        [Button]
+        [EnableIf("@UnityEngine.Application.isPlaying")]
+        [PropertyOrder(6)]
+        public void RaiseCurrent()
+        {
+            if (UnityNull.IsNull(runtimeValue))
+            {
+                runtimeValue = CopyOf(initialValue);
+                StashForEditor();
+            }
+
+            Raise();
+        }
+
         /// <inheritdoc />
         public void SetValue(T value) => Set(value);
 

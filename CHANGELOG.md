@@ -2,6 +2,14 @@
 
 All notable changes to this package are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the package uses [Semantic Versioning](https://semver.org/).
 
+## [0.3.0] - 2026-11-17
+
+### Added
+- **Raise Current** (`VariableEvent<T>.RaiseCurrent()`, also on `IVariableEvent<T>`): raises the current value, or, when it's null or a destroyed Unity object, puts the Initial Value back and raises that. It takes no parameters (so it can be wired from UnityEvents) and has a play-mode inspector button.
+
+### Changed
+- `IVariableEvent<T>` gained `RaiseCurrent()`. Custom implementations of the interface (such as the GushesheGear bridge) must add it; the bridge sketch in the GushesheGear migration guide includes it.
+
 ## [0.2.0] - 2026-11-17
 
 ### Added

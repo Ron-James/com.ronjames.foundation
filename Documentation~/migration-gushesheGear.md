@@ -48,7 +48,7 @@ So almost everything maps one-to-one. The few features with no equivalent are ef
 | `StoredValue` (get) | `Value` |
 | `StoredValue = x` / `Raise(x)` | `Set(x)` |
 | `SetStoredValueDirectly(x)` | `SetSilently(x)` |
-| `Raise()` on a typed action | ⚠ **not `Raise()`**. Old `Raise()` raised the *default value*; new `Raise()` raises the *current* value. Use `Set(variable.InitialValue)` where the old meaning was intended. |
+| `Raise()` on a typed action | ⚠ **not `Raise()`**. Old `Raise()` raised the *default value*; new `Raise()` raises the *current* value. Use `Set(variable.InitialValue)` where "raise the default" was meant, or **`RaiseCurrent()`** where "raise what's there, or the default if nothing is" was meant. |
 | `ResetToDefault()` | `ResetForPlayMode()` (also drops listeners), or `Set(InitialValue)` |
 | `PreviousValue` / `PreviousStoredValue` | none |
 | `HasRaised`, `RaiseCount` | `RaiseCount` (play-mode inspector) |
@@ -147,7 +147,7 @@ The key is a **bridge**: make the existing Action SOs implement the package's in
 
 ### Phase 0: install
 
-- Add the package: `"com.ronjames.foundation": "https://github.com/Ron-James/com.ronjames.foundation.git#v0.2.0"` (Odin and Unity 6 are already there; check Odin is 3.3+).
+- Add the package: `"com.ronjames.foundation": "https://github.com/Ron-James/com.ronjames.foundation.git#v0.3.0"` (Odin and Unity 6 are already there; check Odin is 3.3+).
 - **Name clash:** GushesheGear has a global `ICommand` (`Scripts/Command/ICommand.cs`). In any file that also has `using RonJames.Foundation.Commands;`, refer to one of them by full name, or alias it: `using FoundationCommand = RonJames.Foundation.Commands.ICommand;`. Nothing else clashes.
 
 ### Phase 1: the bridge (no behaviour change)
@@ -176,6 +176,7 @@ public abstract class ActionSO<T> : BaseActionSO, IValueAsset<T>, IVariableEvent
     void IVariableEvent<T>.Set(T value) => Raise(value);
     void IVariableEvent<T>.SetSilently(T value) => SetStoredValueDirectly(value);
     void IEvent.Raise() => Raise(StoredValue);            // new meaning: re-raise the current value
+    void IVariableEvent<T>.RaiseCurrent() => Raise(UnityNull.IsNull(StoredValue) ? _defaultCallValue : StoredValue);
 
     void IEvent.Subscribe(IEventListener l) => Bridge(l, l as Object, () => l.OnEventRaised());
     void IEvent.Unsubscribe(IEventListener l) => Unbridge(l);
