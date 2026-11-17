@@ -7,6 +7,73 @@ using UnityEngine;
 
 namespace RonJames.Foundation.Commands
 {
+    /// <summary>The control requests a Command can make of the Run it is in.</summary>
+    public enum ControlRequest
+    {
+        /// <summary>End the Sequence this Command is in.</summary>
+        StopSequence,
+
+        /// <summary>End the Composite enclosing this Command; that Composite's Sequence continues.</summary>
+        SkipParent,
+
+        /// <summary>Stop the Sequence that contains the Composite enclosing this Command.</summary>
+        StopParent
+    }
+
+    /// <summary>
+    /// Makes a control request (Stop Sequence, Skip Parent or Stop Parent) from the inspector, so
+    /// designers can end a Sequence or Composite early without code. Put it where the old per-command
+    /// "cancel on complete" option would have been: straight after the Command that should end things.
+    /// </summary>
+    public class ControlCommand : InstantCommand
+    {
+        [SerializeField]
+        [HideLabel]
+        private ControlRequest request = ControlRequest.StopSequence;
+
+        /// <summary>Creates a Stop Sequence command.</summary>
+        public ControlCommand()
+        {
+        }
+
+        /// <summary>Creates the command from code.</summary>
+        public ControlCommand(ControlRequest request)
+        {
+            this.request = request;
+        }
+
+        /// <inheritdoc />
+        protected override string DefaultName
+        {
+            get
+            {
+                switch (request)
+                {
+                    case ControlRequest.SkipParent: return "Skip Parent";
+                    case ControlRequest.StopParent: return "Stop Parent";
+                    default: return "Stop Sequence";
+                }
+            }
+        }
+
+        /// <inheritdoc />
+        protected override void Run(CommandContext context)
+        {
+            switch (request)
+            {
+                case ControlRequest.StopSequence:
+                    context.StopSequence();
+                    break;
+                case ControlRequest.SkipParent:
+                    context.SkipParent();
+                    break;
+                case ControlRequest.StopParent:
+                    context.StopParent();
+                    break;
+            }
+        }
+    }
+
     /// <summary>Waits for a number of seconds, reporting progress.</summary>
     public class DelayCommand : Command
     {
@@ -158,12 +225,20 @@ namespace RonJames.Foundation.Commands
         }
     }
 
-    /// <summary>Waits until an Event (or Variable Event) is Raised.</summary>
+    /// <summary>
+    /// Waits until an Event (or Variable Event) has been Raised a number of times (once by default).
+    /// Only Raises that happen while this Command is running count.
+    /// </summary>
     public class WaitForEventCommand : Command
     {
         [OdinSerialize]
         [Required]
         private Events.IEvent target;
+
+        [SerializeField]
+        [MinValue(1)]
+        [Tooltip("How many Raises to wait for.")]
+        private int requiredRaises = 1;
 
         /// <summary>Creates an empty command.</summary>
         public WaitForEventCommand()
@@ -171,9 +246,10 @@ namespace RonJames.Foundation.Commands
         }
 
         /// <summary>Creates the command from code.</summary>
-        public WaitForEventCommand(Events.IEvent target)
+        public WaitForEventCommand(Events.IEvent target, int requiredRaises = 1)
         {
             this.target = target;
+            this.requiredRaises = Mathf.Max(1, requiredRaises);
         }
 
         /// <inheritdoc />
@@ -184,8 +260,27 @@ namespace RonJames.Foundation.Commands
                 throw new InvalidOperationException("Wait For Event has no Event.");
             }
 
+            int required = Mathf.Max(1, requiredRaises);
+            int count = 0;
             var raised = new AwaitableCompletionSource();
-            Action onRaised = () => raised.TrySetResult();
+            if (required > 1)
+            {
+                context.ReportProgress(0f, $"0/{required}");
+            }
+
+            Action onRaised = () =>
+            {
+                count++;
+                if (required > 1)
+                {
+                    context.ReportProgress((float)count / required, $"{count}/{required}");
+                }
+
+                if (count >= required)
+                {
+                    raised.TrySetResult();
+                }
+            };
             target.Subscribe(onRaised);
             try
             {

@@ -1,6 +1,6 @@
 # Design notes from the grill sessions
 
-These are the agreed decisions that are too small or too easy to reverse for an ADR. The vocabulary is defined in `GLOSSARY.md`, and the hard-to-reverse decisions are in `docs/adr/`.
+These are the agreed decisions that are too small or too easy to reverse for an ADR. The vocabulary is defined in `GLOSSARY.md`, and the hard-to-reverse decisions are in `adr/`.
 
 ## Package
 - UPM name `com.ronjames.foundation`, namespace `RonJames.Foundation.*`, display name "RonJames Foundation".
@@ -40,10 +40,11 @@ These are the agreed decisions that are too small or too easy to reverse for an 
   - Composites: Sequence, Parallel, Race, Hooks;
   - Delay;
   - Raise Event, Set Variable;
-  - Wait For Event, Wait Until (Condition);
+  - Wait For Event (optionally for several Raises), Wait Until (Condition);
   - Branch (if/else on a Condition), Switch;
   - Run Command Sequence;
-  - Set Active, Invoke UnityEvent, Log.
+  - Set Active, Invoke UnityEvent, Log;
+  - Control (Stop Sequence / Skip Parent / Stop Parent from the inspector; added in 0.2.0).
 - The Sequence Switcher ships in v1.
 
 ## Events

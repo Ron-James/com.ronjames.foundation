@@ -6,7 +6,18 @@ Reusable Unity infrastructure for designer-authored behaviour:
 - **Events**: ScriptableObject **Events** (no value) and **Variable Events** (a typed value that notifies whenever it is Set), with one listener component for each and pluggable Responses.
 - **Values**: `VariableReference<T>` fields that hold their own value or read from any **Value Source** (usually a global Variable Event), plus **Filters** and **Conditions** that combine with All / Any / None.
 
-The vocabulary is defined in [`GLOSSARY.md`](GLOSSARY.md). The design decisions are in [`docs/adr/`](docs/adr) and [`docs/DESIGN-NOTES.md`](docs/DESIGN-NOTES.md).
+## Documentation
+
+| Read | For |
+|---|---|
+| [`Documentation~/index.md`](Documentation~/index.md) | how the three modules fit together |
+| [`Documentation~/values.md`](Documentation~/values.md) | Value Sources, `VariableReference<T>`, Filters, Conditions, the play-mode reset |
+| [`Documentation~/events.md`](Documentation~/events.md) | Events, Variable Events, Listeners, Responses, your own value types |
+| [`Documentation~/commands.md`](Documentation~/commands.md) | Commands, Runs, Skip / Stop, failure, Composites, built-ins, writing your own |
+| [`Documentation~/migration.md`](Documentation~/migration.md) | **coming from the Bizar projects**: old → new mapping and changed behaviour |
+| [`GLOSSARY.md`](GLOSSARY.md) | the exact meaning of every term |
+| [`Documentation~/adr/`](Documentation~/adr), [`Documentation~/design-notes.md`](Documentation~/design-notes.md) | why things are the way they are |
+| [`CHANGELOG.md`](CHANGELOG.md) | what changed in each version |
 
 ## Requirements
 
@@ -88,7 +99,7 @@ Built in: `bool`, `int`, `float`, `string`, `Vector2`, `Vector3`, `Quaternion`, 
 
 ## Development
 
-`../com.ronjames.foundation.Sandbox` is a Unity project that references this package by local path, with the tests enabled. Run the tests from *Window > General > Test Runner*, or in batch mode:
+`../com.ronjames.foundation.Sandbox` is a local, unversioned Unity project with the package's tests enabled. It normally installs a tagged release from the git URL. Switch its manifest entry to `file:../../com.ronjames.foundation` while editing the package, so changes show up without a push. Run the tests from *Window > General > Test Runner*, or in batch mode:
 
 ```bash
 Unity -batchmode -nographics -projectPath ../com.ronjames.foundation.Sandbox -runTests -testPlatform EditMode

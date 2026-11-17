@@ -297,6 +297,41 @@ namespace RonJames.Foundation.Tests
         }
 
         [UnityTest]
+        public IEnumerator WaitForEvent_CanWaitForSeveralRaises()
+        {
+            var signal = ScriptableObject.CreateInstance<EventAsset>();
+            created.Add(signal);
+            sequence.SetCommands(new ICommand[] { new WaitForEventCommand(signal, requiredRaises: 2), P("after") });
+            sequence.Run();
+            yield return Frames(2);
+
+            signal.Raise();
+            yield return Frames(2);
+            Assert.IsFalse(log.Contains("start:after"), "One Raise of two is not enough.");
+
+            signal.Raise();
+            yield return WaitIdle();
+            Assert.Contains("end:after", log);
+        }
+
+        [UnityTest]
+        public IEnumerator ControlCommand_MakesControlRequestsFromTheInspector()
+        {
+            yield return RunToIdle(
+                new SequenceComposite(P("inner"), new ControlCommand(ControlRequest.SkipParent), P("inner-never")),
+                P("outer-after"),
+                new ControlCommand(ControlRequest.StopSequence),
+                P("outer-never"));
+
+            Assert.AreEqual("Skip Parent", Node(0).Children[1].Name);
+            Assert.AreEqual(CommandStatus.Skipped, Node(0).Status);
+            Assert.IsFalse(log.Contains("start:inner-never"));
+            Assert.Contains("end:outer-after", log);
+            Assert.IsFalse(log.Contains("start:outer-never"));
+            Assert.AreEqual(RunStatus.Stopped, sequence.LastRun.Status);
+        }
+
+        [UnityTest]
         public IEnumerator WaitUntil_UsesChangeNotificationsFromVariableEvents()
         {
             var flag = ScriptableObject.CreateInstance<BoolVariableEvent>();

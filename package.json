@@ -1,6 +1,8 @@
 {
   "name": "com.ronjames.foundation",
-  "version": "0.1.0",
+  "version": "0.2.0",
+  "documentationUrl": "https://github.com/Ron-James/com.ronjames.foundation/blob/master/Documentation~/index.md",
+  "changelogUrl": "https://github.com/Ron-James/com.ronjames.foundation/blob/master/CHANGELOG.md",
   "displayName": "RonJames Foundation",
   "description": "Designer-authored command sequences, ScriptableObject events and variable events, and variable references. Requires Odin Inspector in the consuming project.",
   "unity": "6000.0",

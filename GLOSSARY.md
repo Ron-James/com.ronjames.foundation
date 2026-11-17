@@ -32,6 +32,10 @@ _Avoid_: Any composite, first-wins
 A Composite that wraps a single Command so authors can respond when it starts, completes, is Skipped or fails.
 _Avoid_: Command events
 
+**Control Command**:
+A Command whose only job is to make a Stop Sequence, Skip Parent or Stop Parent request, so authors can end things early from the inspector.
+_Avoid_: Cancel command, cancel on complete
+
 **Queued Run**:
 A Run waiting to start, in order, once the current Run of the same Command Sequence has finished.
 _Avoid_: Pending queue, appended commands
