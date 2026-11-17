@@ -1,0 +1,21 @@
+{
+  "name": "RonJames.Foundation.Events.Editor",
+  "rootNamespace": "RonJames.Foundation.Events.Editor",
+  "references": ["RonJames.Foundation.Values", "RonJames.Foundation.Events"],
+  "includePlatforms": ["Editor"],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": true,
+  "precompiledReferences": [
+    "Sirenix.OdinInspector.Attributes.dll",
+    "Sirenix.Serialization.dll",
+    "Sirenix.Serialization.Config.dll",
+    "Sirenix.Utilities.dll",
+    "Sirenix.OdinInspector.Editor.dll",
+    "Sirenix.Utilities.Editor.dll"
+  ],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

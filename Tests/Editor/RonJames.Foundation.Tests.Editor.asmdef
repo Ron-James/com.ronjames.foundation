@@ -1,0 +1,26 @@
+{
+  "name": "RonJames.Foundation.Tests.Editor",
+  "rootNamespace": "RonJames.Foundation.Tests",
+  "references": [
+    "RonJames.Foundation.Values",
+    "RonJames.Foundation.Events",
+    "RonJames.Foundation.Commands",
+    "UnityEngine.TestRunner",
+    "UnityEditor.TestRunner"
+  ],
+  "includePlatforms": ["Editor"],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": true,
+  "precompiledReferences": [
+    "nunit.framework.dll",
+    "Sirenix.OdinInspector.Attributes.dll",
+    "Sirenix.Serialization.dll",
+    "Sirenix.Serialization.Config.dll",
+    "Sirenix.Utilities.dll"
+  ],
+  "autoReferenced": false,
+  "defineConstraints": ["UNITY_INCLUDE_TESTS"],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

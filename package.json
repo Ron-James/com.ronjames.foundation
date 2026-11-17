@@ -1,0 +1,24 @@
+{
+  "name": "com.ronjames.foundation",
+  "version": "0.1.0",
+  "displayName": "RonJames Foundation",
+  "description": "Designer-authored command sequences, ScriptableObject events and variable events, and variable references. Requires Odin Inspector in the consuming project.",
+  "unity": "6000.0",
+  "author": {
+    "name": "RonJames"
+  },
+  "keywords": [
+    "commands",
+    "events",
+    "scriptableobject",
+    "variables",
+    "odin"
+  ],
+  "samples": [
+    {
+      "displayName": "Key and Door",
+      "description": "Picking up a key sets a bool Variable Event; a listener with a condition runs a command sequence that opens a door.",
+      "path": "Samples~/KeyAndDoor"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a7cce0614230fa64095aba6f436df530, type: 3}
+  m_Name: Door Bell
+  m_EditorClassIdentifier: RonJames.Foundation.Events::RonJames.Foundation.Events.EventAsset
+  description: Raised when someone rings the door bell.

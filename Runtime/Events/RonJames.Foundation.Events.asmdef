@@ -1,0 +1,19 @@
+{
+  "name": "RonJames.Foundation.Events",
+  "rootNamespace": "RonJames.Foundation.Events",
+  "references": ["RonJames.Foundation.Values"],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": true,
+  "precompiledReferences": [
+    "Sirenix.OdinInspector.Attributes.dll",
+    "Sirenix.Serialization.dll",
+    "Sirenix.Serialization.Config.dll",
+    "Sirenix.Utilities.dll"
+  ],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}
