@@ -23,7 +23,7 @@ This folder ends in `~` inside the package, so Unity never imports it. You copy 
 ### 1. Install
 
 1. Add the package to `Packages/manifest.json`:
-   `"com.ronjames.foundation": "https://github.com/Ron-James/com.ronjames.foundation.git#v0.3.0"`
+   `"com.ronjames.foundation": "https://github.com/Ron-James/com.ronjames.foundation.git#v0.3.1"`
 2. From the GushesheGear folder, apply the bridge: `git apply <path-to-this-kit>/Bridge/bridge.patch`. It changes `ActionSO.cs` and `ValueAsset.cs` only. If `git apply` refuses because those files changed since the patch was made, apply the same edits by hand; they're short and commented.
 3. Copy `Runtime/` and `Editor/` into `Assets/_Migration/`.
 4. Let Unity compile. Nothing behaves differently yet: the bridge only *adds* interfaces.

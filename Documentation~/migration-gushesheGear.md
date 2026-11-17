@@ -155,7 +155,7 @@ The phases below explain what each step does. The kit's README is the step-by-st
 
 ### Phase 0: install
 
-- Add the package: `"com.ronjames.foundation": "https://github.com/Ron-James/com.ronjames.foundation.git#v0.3.0"` (Odin and Unity 6 are already there; check Odin is 3.3+).
+- Add the package: `"com.ronjames.foundation": "https://github.com/Ron-James/com.ronjames.foundation.git#v0.3.1"` (Odin and Unity 6 are already there; check Odin is 3.3+).
 - **Name clash:** GushesheGear has a global `ICommand` (`Scripts/Command/ICommand.cs`). In any file that also has `using RonJames.Foundation.Commands;`, refer to one of them by full name, or alias it: `using FoundationCommand = RonJames.Foundation.Commands.ICommand;`. Nothing else clashes.
 
 ### Phase 1: the bridge (no behaviour change)
