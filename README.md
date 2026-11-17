@@ -15,13 +15,13 @@ The vocabulary is defined in [`GLOSSARY.md`](GLOSSARY.md). The design decisions 
 
 ## Install
 
-In `Packages/manifest.json`:
+In `Packages/manifest.json`, from the private GitHub repo (needs git access to `Ron-James/com.ronjames.foundation` on the machine):
 
 ```json
-"com.ronjames.foundation": "file:../../com.ronjames.foundation"
+"com.ronjames.foundation": "https://github.com/Ron-James/com.ronjames.foundation.git"
 ```
 
-(a local path), or a git URL once the repo is hosted. To run the package's tests from a project, also add `"testables": ["com.ronjames.foundation"]`.
+Pin a version by adding a tag or commit, e.g. `...foundation.git#v0.1.0`. While developing the package itself, use a local path instead, e.g. `"file:../../com.ronjames.foundation"`. To run the package's tests from a project, also add `"testables": ["com.ronjames.foundation"]`.
 
 ## Quick start
 
