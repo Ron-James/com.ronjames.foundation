@@ -2,6 +2,14 @@
 
 All notable changes to this package are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the package uses [Semantic Versioning](https://semver.org/).
 
+## [0.4.0] - 2026-11-18
+
+### Added
+- **Notify Order** on Events and Variable Events (`NotifyOrder`, default **Oldest First**). **Newest First** notifies the most recent subscriber first; on a Variable Event, listeners that receive the value are notified (newest first) before listeners that don't. It exists for projects migrated from an event system that notified in that order, where the last listener to run decides the outcome. Found while migrating GushesheGear: a "hide the countdown" listener and a "show the countdown number" listener on the same Variable Event swapped places.
+- **Only On First Enable** on Variable Event Listeners (shown when Receive Current Value On Enable is on, off by default): delivers the current value the first time the listener is enabled and not on later re-enables.
+
+Neither changes existing behaviour: both are off by default.
+
 ## [0.3.1] - 2026-11-17
 
 ### Added

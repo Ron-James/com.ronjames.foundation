@@ -17,6 +17,11 @@ namespace RonJames.Foundation.Events
         [Tooltip("What this event means and who raises it. For people, not code.")]
         private string description = "";
 
+        [SerializeField]
+        [Tooltip("The order listeners are notified in. Oldest First (the default) is the order they subscribed in. " +
+                 "Newest First is the reverse, for projects migrated from an event system that worked that way.")]
+        private NotifyOrder notifyOrder = NotifyOrder.OldestFirst;
+
         [NonSerialized]
         private readonly ListenerList listeners = new ListenerList();
 
@@ -25,6 +30,13 @@ namespace RonJames.Foundation.Events
 
         /// <summary>What this event means, for people.</summary>
         public string Description => description;
+
+        /// <summary>The order listeners are notified in.</summary>
+        public NotifyOrder NotifyOrder
+        {
+            get => notifyOrder;
+            set => notifyOrder = value;
+        }
 
         /// <summary>The number of subscribed Listeners (for tests and debugging).</summary>
         [ShowInInspector]
@@ -43,7 +55,7 @@ namespace RonJames.Foundation.Events
         [EnableIf("@UnityEngine.Application.isPlaying")]
         public void Raise()
         {
-            object[] current = listeners.BeginRaise(this);
+            object[] current = listeners.BeginRaise(this, notifyOrder);
             if (current == null)
             {
                 return;

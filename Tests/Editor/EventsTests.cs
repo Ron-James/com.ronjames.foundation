@@ -264,6 +264,55 @@ namespace RonJames.Foundation.Tests
         }
 
         [Test]
+        public void NotifyOrderNewestFirst_NotifiesTheMostRecentSubscriberFirst()
+        {
+            var order = new List<string>();
+            signal.Subscribe((Action)(() => order.Add("first")));
+            signal.Subscribe((Action)(() => order.Add("second")));
+            signal.Subscribe((Action)(() => order.Add("third")));
+
+            signal.NotifyOrder = NotifyOrder.NewestFirst;
+            signal.Raise();
+            Assert.AreEqual(new[] { "third", "second", "first" }, order);
+
+            order.Clear();
+            signal.NotifyOrder = NotifyOrder.OldestFirst;
+            signal.Raise();
+            Assert.AreEqual(new[] { "first", "second", "third" }, order, "Switching back takes effect on the next Raise.");
+        }
+
+        [Test]
+        public void NotifyOrderNewestFirst_OnAVariableEvent_NotifiesValueListenersBeforePlainOnes()
+        {
+            var order = new List<string>();
+            number.Subscribe((Action)(() => order.Add("plain 1")));
+            number.Subscribe((Action<int>)(value => order.Add("value 1")));
+            number.Subscribe((Action)(() => order.Add("plain 2")));
+            number.Subscribe((Action<int>)(value => order.Add("value 2")));
+
+            number.NotifyOrder = NotifyOrder.NewestFirst;
+            number.Set(5);
+
+            Assert.AreEqual(new[] { "value 2", "value 1", "plain 2", "plain 1" }, order);
+        }
+
+        [Test]
+        public void NotifyOrderNewestFirst_StillAppliesSubscriptionChangesOnTheNextRaise()
+        {
+            var order = new List<string>();
+            Action late = () => order.Add("late");
+            signal.NotifyOrder = NotifyOrder.NewestFirst;
+            signal.Subscribe((Action)(() => { order.Add("first"); signal.Subscribe(late); }));
+
+            signal.Raise();
+            Assert.AreEqual(new[] { "first" }, order);
+
+            order.Clear();
+            signal.Raise();
+            Assert.AreEqual(new[] { "late", "first" }, order);
+        }
+
+        [Test]
         public void VariableEvents_RegisterForThePlayModeReset()
         {
             number.InitialValue = 10;

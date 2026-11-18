@@ -9,7 +9,7 @@ namespace RonJames.Foundation.Events
     /// <summary>
     /// The subscriber list behind every Event and Variable Event. It enforces the Raise rules:
     /// <list type="bullet">
-    /// <item>Listeners are notified in subscription order, and adding the same one twice is ignored.</item>
+    /// <item>Listeners are notified in subscription order (or newest first, see <see cref="NotifyOrder"/>), and adding the same one twice is ignored.</item>
     /// <item>Subscribing or unsubscribing during a Raise takes effect on the next Raise.</item>
     /// <item>A Raise started inside a Raise runs immediately (nested), up to <see cref="MaxRaiseDepth"/> deep.</item>
     /// <item>A Listener that throws is logged and the others still run.</item>
@@ -23,6 +23,7 @@ namespace RonJames.Foundation.Events
 
         private readonly List<object> items = new List<object>();
         private object[] snapshot = Array.Empty<object>();
+        private NotifyOrder snapshotOrder = NotifyOrder.OldestFirst;
         private bool dirty;
         private int depth;
 
@@ -67,8 +68,10 @@ namespace RonJames.Foundation.Events
         /// <summary>
         /// Starts a Raise and returns the Listeners to notify, or null when the Raise is refused because
         /// it is nested too deeply. Every non-null return must be paired with <see cref="EndRaise"/>.
+        /// With <see cref="NotifyOrder.NewestFirst"/> and a <paramref name="notifiedFirst"/> test, the Listeners
+        /// that pass the test come first (newest first), then the rest (newest first).
         /// </summary>
-        public object[] BeginRaise(Object context)
+        public object[] BeginRaise(Object context, NotifyOrder order = NotifyOrder.OldestFirst, Predicate<object> notifiedFirst = null)
         {
             if (depth >= MaxRaiseDepth)
             {
@@ -79,9 +82,10 @@ namespace RonJames.Foundation.Events
                 return null;
             }
 
-            if (dirty)
+            if (dirty || order != snapshotOrder)
             {
-                snapshot = items.ToArray();
+                snapshot = Build(order, notifiedFirst);
+                snapshotOrder = order;
                 dirty = false;
             }
 
@@ -92,6 +96,37 @@ namespace RonJames.Foundation.Events
         public void EndRaise()
         {
             depth--;
+        }
+
+        private object[] Build(NotifyOrder order, Predicate<object> notifiedFirst)
+        {
+            if (order == NotifyOrder.OldestFirst)
+            {
+                return items.ToArray();
+            }
+
+            var result = new object[items.Count];
+            int next = 0;
+            if (notifiedFirst != null)
+            {
+                for (int i = items.Count - 1; i >= 0; i--)
+                {
+                    if (notifiedFirst(items[i]))
+                    {
+                        result[next++] = items[i];
+                    }
+                }
+            }
+
+            for (int i = items.Count - 1; i >= 0; i--)
+            {
+                if (notifiedFirst == null || !notifiedFirst(items[i]))
+                {
+                    result[next++] = items[i];
+                }
+            }
+
+            return result;
         }
 
         /// <summary>

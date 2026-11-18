@@ -401,5 +401,53 @@ namespace RonJames.Foundation.Tests
             yield return WaitIdle();
             Assert.Contains("end:opened", log);
         }
+
+        private sealed class RecordInts : IResponse<int>
+        {
+            public readonly List<int> Received = new List<int>();
+
+            public void Respond(int value) => Received.Add(value);
+        }
+
+        [UnityTest]
+        public IEnumerator VariableEventListener_OnlyOnFirstEnable_SkipsTheCurrentValueOnReEnable()
+        {
+            var number = ScriptableObject.CreateInstance<IntVariableEvent>();
+            created.Add(number);
+            number.Set(7);
+
+            var everyEnable = NewIntListener(number, onlyOnFirstEnable: false, out RecordInts everyTime);
+            var firstEnable = NewIntListener(number, onlyOnFirstEnable: true, out RecordInts firstOnly);
+            everyEnable.SetActive(true);
+            firstEnable.SetActive(true);
+            yield return null;
+            Assert.AreEqual(new[] { 7 }, everyTime.Received);
+            Assert.AreEqual(new[] { 7 }, firstOnly.Received);
+
+            everyEnable.SetActive(false);
+            firstEnable.SetActive(false);
+            everyEnable.SetActive(true);
+            firstEnable.SetActive(true);
+            yield return null;
+            Assert.AreEqual(new[] { 7, 7 }, everyTime.Received, "The default delivers the current value on every enable.");
+            Assert.AreEqual(new[] { 7 }, firstOnly.Received, "Only On First Enable skips the re-enable.");
+
+            number.Set(8);
+            Assert.AreEqual(new[] { 7, 8 }, firstOnly.Received, "It still listens after being re-enabled.");
+        }
+
+        private GameObject NewIntListener(IntVariableEvent number, bool onlyOnFirstEnable, out RecordInts record)
+        {
+            var listenerObject = new GameObject("Int Listener");
+            created.Add(listenerObject);
+            listenerObject.SetActive(false);
+            var listener = listenerObject.AddComponent<IntVariableEventListener>();
+            listener.Events.Add(number);
+            listener.ReceiveCurrentValueOnEnable = true;
+            listener.OnlyOnFirstEnable = onlyOnFirstEnable;
+            record = new RecordInts();
+            listener.Responses.Add(record);
+            return listenerObject;
+        }
     }
 }

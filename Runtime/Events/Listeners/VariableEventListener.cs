@@ -23,6 +23,16 @@ namespace RonJames.Foundation.Events
                  "Use it when this listener may enable after the value was Set.")]
         private bool receiveCurrentValueOnEnable;
 
+        [SerializeField]
+        [ShowIf(nameof(receiveCurrentValueOnEnable))]
+        [Tooltip("When on, the current value is delivered only the first time this listener is enabled, not every time " +
+                 "it is re-enabled. Use it for a listener on an object that is switched off and on, when re-running the " +
+                 "Responses on each re-enable is not wanted.")]
+        private bool onlyOnFirstEnable;
+
+        [NonSerialized]
+        private bool hasReceivedOnEnable;
+
         [OdinSerialize]
         [Tooltip("Optional. Raises whose value doesn't pass are ignored.")]
         private IFilter<T> filter;
@@ -59,6 +69,13 @@ namespace RonJames.Foundation.Events
         }
 
         /// <summary>The Responses run on each accepted Raise.</summary>
+        /// <summary>When true, Receive Current Value On Enable applies only the first time the listener is enabled.</summary>
+        public bool OnlyOnFirstEnable
+        {
+            get => onlyOnFirstEnable;
+            set => onlyOnFirstEnable = value;
+        }
+
         public List<IResponse<T>> Responses => responses;
 
         /// <summary>Subscribes, then optionally delivers each current value.</summary>
@@ -72,10 +89,12 @@ namespace RonJames.Foundation.Events
                 }
             }
 
-            if (!receiveCurrentValueOnEnable)
+            if (!receiveCurrentValueOnEnable || (onlyOnFirstEnable && hasReceivedOnEnable))
             {
                 return;
             }
+
+            hasReceivedOnEnable = true;
 
             foreach (IVariableEvent<T> target in events)
             {

@@ -35,6 +35,11 @@ namespace RonJames.Foundation.Events
         private bool onlyRaiseOnChange;
 
         [SerializeField]
+        [Tooltip("The order listeners are notified in. Oldest First (the default) is the order they subscribed in. " +
+                 "Newest First is the reverse, for projects migrated from an event system that worked that way.")]
+        private NotifyOrder notifyOrder = NotifyOrder.OldestFirst;
+
+        [SerializeField]
         [Tooltip("Editor only: keep the Runtime Value between play sessions instead of resetting it to the Initial Value. " +
                  "Builds always start from the Initial Value.")]
         private bool keepRuntimeValueInEditor = false;
@@ -56,6 +61,13 @@ namespace RonJames.Foundation.Events
         {
             get => initialValue;
             set => initialValue = value;
+        }
+
+        /// <summary>The order listeners are notified in.</summary>
+        public NotifyOrder NotifyOrder
+        {
+            get => notifyOrder;
+            set => notifyOrder = value;
         }
 
         /// <summary>When true, Set only Raises if the value actually changes.</summary>
@@ -153,7 +165,7 @@ namespace RonJames.Foundation.Events
         [PropertyOrder(6)]
         public void Raise()
         {
-            object[] current = listeners.BeginRaise(this);
+            object[] current = listeners.BeginRaise(this, notifyOrder, ReceivesTheValue);
             if (current == null)
             {
                 return;
@@ -200,6 +212,8 @@ namespace RonJames.Foundation.Events
         }
 
         /// <inheritdoc />
+        private static readonly Predicate<object> ReceivesTheValue = listener => listener is IVariableEventListener<T> || listener is Action<T>;
+
         public void Subscribe(IVariableEventListener<T> listener) => listeners.Add(listener);
 
         /// <inheritdoc />

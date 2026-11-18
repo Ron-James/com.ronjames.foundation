@@ -47,7 +47,7 @@ Each Variable Event has a serialized **Initial Value** (what you author) and a n
 
 ### Rules every Raise follows
 
-1. Listeners are notified **in subscription order**. Subscribing the same Listener twice is ignored.
+1. Listeners are notified **in subscription order**. Subscribing the same Listener twice is ignored. An Event or Variable Event can be switched to **Notify Order: Newest First** instead: the most recent subscriber first and, on a Variable Event, listeners that receive the value before listeners that don't. That is for projects migrated from an event system that worked that way.
 2. Subscribing or unsubscribing **during a Raise** takes effect on the **next** Raise.
 3. If a Listener **Sets the event it is listening to**, that nested Raise is delivered **immediately**. Listeners later in the outer Raise then read the newest value, so everyone ends up with the latest value. Nesting deeper than 32 levels is refused with an error: it's almost certainly an infinite loop.
 4. A Listener that **throws** is logged (click the log to select it) and the remaining Listeners still run.
@@ -73,7 +73,7 @@ Implement `IEventListener.OnEventRaised()` or `IVariableEventListener<T>.OnEvent
 | **Variable Event Listener** (one per value type, e.g. `BoolVariableEventListener`) | one or more Variable Events of that type | a **Filter** on the value, then an optional **Condition** | its **Responses** with the value (`IResponse<T>`) |
 
 - They subscribe in `OnEnable` and unsubscribe in `OnDisable`.
-- **Receive Current Value On Enable** (Variable Event Listener, off by default) delivers each Variable Event's current value once on enable, as if it had just been Raised. Use it when the listener may enable after the value was Set.
+- **Receive Current Value On Enable** (Variable Event Listener, off by default) delivers each Variable Event's current value once on enable, as if it had just been Raised. Use it when the listener may enable after the value was Set. Turn on **Only On First Enable** to skip the delivery when the listener is re-enabled later.
 - The **Respond (test)** button runs the Responses by hand.
 - **Filter vs Condition:** the Filter is about the Raised *value* ("is it true?", "is it over 5?"). The Condition is about the *world* at that moment ("does the door have power?"). Either can be empty.
 
